@@ -1,0 +1,47 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  avatar   String
+  name     String
+  email    String   @unique
+  password String
+  rooms    Room[]   @relation(fields: [roomIds], references: [id], onDelete: Cascade)
+  roomIds  String[] @db.ObjectId
+  chats    Chat[]
+}
+
+model Room {
+  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  title       String
+  avatar      String
+  description String
+  members     User[]   @relation(fields: [memberIds], references: [id], onDelete: Cascade)
+  memberIds   String[] @db.ObjectId
+  chats       Chat[]
+}
+
+model Chat {
+  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  content   String
+  type      ChatType
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId    String   @db.ObjectId
+}
+
+enum ChatType {
+  VIDEO
+  IMAGE
+  TEXT
+}
